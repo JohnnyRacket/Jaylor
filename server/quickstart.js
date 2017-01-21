@@ -8,7 +8,7 @@ var googleAuth = require('google-auth-library');
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/sheets.googleapis.com-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+var SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
 var TOKEN_PATH = TOKEN_DIR + 'sheets.googleapis.com-nodejs-quickstart.json';
@@ -22,7 +22,34 @@ function getMovies(callback){
     }
     // Authorize a client with the loaded credentials, then call the
     // Google Sheets API.
-    var result = authorize(JSON.parse(content), listMajors, callback);
+    var result = authorize(JSON.parse(content), listMovies, callback);
+
+  });
+};
+
+function getFoods(callback){
+  fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+    if (err) {
+      console.log('Error loading client secret file: ' + err);
+      return;
+    }
+    // Authorize a client with the loaded credentials, then call the
+    // Google Sheets API.
+    var result = authorize(JSON.parse(content), listFoods, callback);
+
+  });
+};
+
+function addMovie(title, genre, callback){
+  fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+    if (err) {
+      console.log('Error loading client secret file: ' + err);
+      return;
+    }
+    // Authorize a client with the loaded credentials, then call the
+    // Google Sheets API.
+    console.log("in add movie function");
+    var result = authorizeAdd(JSON.parse(content), title, genre, addNewMovie, callback);
 
   });
 };
@@ -33,6 +60,25 @@ function getMovies(callback){
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
+ function authorizeAdd(credentials, title, genre, callback, secondCallback) {
+  var clientSecret = credentials.installed.client_secret;
+  var clientId = credentials.installed.client_id;
+  var redirectUrl = credentials.installed.redirect_uris[0];
+  var auth = new googleAuth();
+  var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+  console.log("title = " + title);
+
+  // Check if we have previously stored a token.
+  fs.readFile(TOKEN_PATH, function(err, token) {
+    if (err) {
+      getNewToken(oauth2Client, callback);
+    } else {
+      oauth2Client.credentials = JSON.parse(token);
+      callback(oauth2Client, title, genre, secondCallback);
+    }
+  });
+}
+
 function authorize(credentials, callback, secondCallback) {
   var clientSecret = credentials.installed.client_secret;
   var clientId = credentials.installed.client_id;
@@ -104,7 +150,7 @@ function storeToken(token) {
  * Print the names and majors of students in a sample spreadsheet:
  * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
  */
-function listMajors(auth, callback) {
+function listMovies(auth, callback) {
   var sheets = google.sheets('v4');
   sheets.spreadsheets.values.get({
     auth: auth,
@@ -130,4 +176,63 @@ function listMajors(auth, callback) {
   });
 }
 
+function addNewMovie(auth, title, genre, callback){
+  console.log("adding new movie with title: " + title);
+  var sheets = google.sheets('v4');
+  sheets.spreadsheets.values.append({
+    auth: auth,
+    spreadsheetId: '1dzo-5unWpIizZ8Q0qumAe3leT9RsQobv_Rq3WXBkx7k',
+    range: 'A2:B',
+    includeValuesInResponse: false,
+    insertDataOption: 'INSERT_ROWS',
+    responseDateTimeRenderOption: 'FORMATTED_STRING',
+    responseValueRenderOption: 'FORMATTED_VALUE',
+    valueInputOption: 'USER_ENTERED',
+    resource: 
+    {
+      "values": [
+        [
+          title,
+          genre
+        ]
+      ]
+    }
+  }, function(err, response){
+     if (err) {
+      console.log('The API returned an error: ' + err);
+      return;
+    }else{
+      console.log(response);
+    }
+  });
+}
+
+function listFoods(auth, callback) {
+  var sheets = google.sheets('v4');
+  sheets.spreadsheets.values.get({
+    auth: auth,
+    spreadsheetId: '1j74PNGlNCFzcURAkEE5hVVDq8uLYoS0l0rICiyzJD64',
+    range: 'A2:B',
+  }, function(err, response) {
+    if (err) {
+      console.log('The API returned an error: ' + err);
+      return;
+    }
+    var rows = response.values;
+    if (rows.length == 0) {
+      console.log('No data found.');
+    } else {
+      console.log('Name, Type:');
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        // Print columns A and E, which correspond to indices 0 and 4.
+        console.log('%s, %s', row[0], row[1]);
+      }
+    }
+    callback(response.values);
+  });
+}
+
 module.exports.getMovies = getMovies;
+module.exports.getFoods = getFoods;
+module.exports.addMovie = addMovie;

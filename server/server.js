@@ -40,16 +40,33 @@ app.get('/', function(req, res){
     res.sendFile(path.join(__dirname + '/../index.html'));
 });
 
+app.use('/views',express.static(path.join(__dirname, '/../views')));
+app.use('/css',express.static(path.join(__dirname, '/../css')));
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/movies', function(req, res) {
+router.get('/getMovies', function(req, res) {
     //res.json({ message: 'hello world' });
     sheetsAPI.getMovies(function(result){
     	res.json(result);
     })
-    //res.json(sheetsAPI.getMovies()[0][0]);   
+});
+router.get('/getFoods', function(req, res) {
+    //res.json({ message: 'hello world' });
+    sheetsAPI.getFoods(function(result){
+    	res.json(result);
+    })
 });
 
-
+router.post('/addMovie', function(req, res) {
+	var title = req.body.title;
+	var genre = req.body.genre;
+	console.log("trying to add movie");
+    //res.json({ message: 'hello world' });
+    sheetsAPI.addMovie(title, genre, function(result){
+    	//res.json(result);
+    	console.log("done trying to add movie")
+    })
+    //res.json(sheetsAPI.getMovies()[0][0]);   
+});
 
 // REGISTER OUR ROUTES -------------------------------
 app.use('/api', router);

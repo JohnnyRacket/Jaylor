@@ -1,0 +1,52 @@
+#container {
+  width: 90%;
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  font-family: 'Poppins', arial;
+}
+
+h1 {
+  font-size: 40px;
+  font-weight: 600;
+  padding: 20px 10px 0 10px;
+  margin: 0px;
+}
+
+p {
+  padding: 0 10px 40px 10px;
+  margin: 0;
+  color: #656565;
+}
+
+
+button:active, button:link, button:visited{
+	border: none;
+}
+
+button{ 
+  margin-bottom: 30px;
+  color: #fff;
+  background-color: #00aaff;
+  padding: 10px 40px; 
+  border: none;
+  font-size: 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+button:disabled{
+	background-color: #ddd;
+}
+
+#quote {
+  display: block;
+  width: 90%;
+  max-width: 400px;
+  margin: 0 auto 20px auto;
+  padding: 10px;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+}
